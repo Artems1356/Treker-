@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NEXUS // OS — Приложение контроля привычек и состояния</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-shell">
+
+    <!-- ===== ВЕРХНЯЯ ПАНЕЛЬ ПРИЛОЖЕНИЯ ===== -->
+    <header class="topbar">
+      <!-- Профиль пользователя (клик открывает редактор ника и эмблемы) -->
+      <div class="profile-box" id="open-profile-btn" title="Нажми, чтобы изменить никнейм и профиль">
+        <div class="profile-emblem" id="profile-emblem"></div>
+        <div class="profile-info">
+          <div class="profile-name-row">
+            <span class="profile-name" id="profile-name">OPERATOR</span>
+            <button type="button" class="edit-nick-btn" id="edit-nick-btn">✎ Изменить ник</button>
+            <span class="rank-pill" id="rank-pill">JUNIOR</span>
+            <span class="lvl-pill mono" id="level-badge">LVL 1</span>
+          </div>
+          <div class="profile-sub-row">
+            <span class="profile-role" id="profile-role">Full-Stack Developer</span>
+            <div class="xp-track"><div class="xp-fill" id="xp-fill"></div></div>
+            <span class="mono xp-text" id="xp-text">0 / 100 XP</span>
+            <span class="mono streak-pill" id="streak-pill">СЕРИЯ: 0 ДН.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Навигация по вкладкам приложения -->
+      <nav class="nav-tabs" id="nav-tabs">
+        <button class="tab-btn active" data-tab="all">Обзор и Матрица</button>
+        <button class="tab-btn" data-tab="evening">Вечерний итог и План</button>
+        <button class="tab-btn" data-tab="today">Сегодня + Фокус</button>
+        <button class="tab-btn" data-tab="achievements">Достижения (<span id="nav-ach-count">0/8</span>)</button>
+      </nav>
+
+      <!-- Переключатель месяца и системные кнопки -->
+      <div class="topbar-right">
+        <div class="month-nav">
+          <button class="nav-btn" id="prev-month" title="Предыдущий месяц">◀</button>
+          <div class="month-label" id="month-label">ОКТЯБРЬ 2026</div>
+          <button class="nav-btn" id="next-month" title="Следующий месяц">▶</button>
+        </div>
+
+        <div class="topbar-actions">
+          <button class="btn-ghost" id="backup-btn" title="Экспорт или импорт данных">Бэкап</button>
+          <button class="btn-ghost" id="demo-btn" title="Заполнить месяц примером">Демо</button>
+          <button class="btn-danger" id="reset-btn" title="Очистить текущий месяц">Сброс</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- ===== БЛОК 1: СВОДКА ПРОГРЕССА (ДЕНЬ / НЕДЕЛЯ / МЕСЯЦ) + ТРЕКЕР СОСТОЯНИЯ ===== -->
+    <section class="overview-grid" data-section="all today evening">
+      <!-- Прогресс за день -->
+      <div class="card kpi-card">
+        <div class="card-head">
+          <span class="card-tag">ПРОГРЕСС ЗА ДЕНЬ</span>
+          <span class="mono card-sub" id="today-label">—</span>
+        </div>
+        <div class="ring-row">
+          <div class="ring-box">
+            <svg viewBox="0 0 100 100">
+              <circle class="ring-bg" cx="50" cy="50" r="40"></circle>
+              <circle class="ring-bar cyan" id="ring-day" cx="50" cy="50" r="40"></circle>
+            </svg>
+            <div class="ring-val mono" id="ring-day-pct">0%</div>
+          </div>
+          <div class="kpi-stats mono">
+            <div><span>Сделано:</span> <b id="day-done">0</b></div>
+            <div><span>Осталось:</span> <b id="day-left">0</b></div>
+            <div><span>План дня:</span> <b id="day-total">0</b></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Прогресс за неделю -->
+      <div class="card kpi-card">
+        <div class="card-head">
+          <span class="card-tag">ПРОГРЕСС ЗА НЕДЕЛЮ</span>
+          <span class="mono card-sub" id="week-label">7 ДНЕЙ</span>
+        </div>
+        <div class="ring-row">
+          <div class="ring-box">
+            <svg viewBox="0 0 100 100">
+              <circle class="ring-bg" cx="50" cy="50" r="40"></circle>
+              <circle class="ring-bar blue" id="ring-week" cx="50" cy="50" r="40"></circle>
+            </svg>
+            <div class="ring-val mono" id="ring-week-pct">0%</div>
+          </div>
+          <div class="kpi-stats mono">
+            <div><span>Сделано:</span> <b id="week-done">0</b></div>
+            <div><span>Осталось:</span> <b id="week-left">0</b></div>
+            <div><span>План нед.:</span> <b id="week-total">0</b></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Прогресс за месяц -->
+      <div class="card kpi-card">
+        <div class="card-head">
+          <span class="card-tag">ПРОГРЕСС ЗА МЕСЯЦ</span>
+          <span class="mono card-sub" id="month-days-label">31 ДЕНЬ</span>
+        </div>
+        <div class="ring-row">
+          <div class="ring-box">
+            <svg viewBox="0 0 100 100">
+              <circle class="ring-bg" cx="50" cy="50" r="40"></circle>
+              <circle class="ring-bar green" id="ring-month" cx="50" cy="50" r="40"></circle>
+            </svg>
+            <div class="ring-val mono" id="ring-month-pct">0%</div>
+          </div>
+          <div class="kpi-stats mono">
+            <div><span>Сделано:</span> <b id="month-done">0</b></div>
+            <div><span>Осталось:</span> <b id="month-left">0</b></div>
+            <div><span>План мес.:</span> <b id="month-total">0</b></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Трекер состояния: За день / За неделю / За месяц -->
+      <div class="card state-card">
+        <div class="card-head">
+          <span class="card-tag">ТРЕКЕР СОСТОЯНИЯ (1–5)</span>
+          <span class="mono card-sub">ДЕНЬ · НЕДЕЛЯ · МЕСЯЦ</span>
+        </div>
+        <div class="state-periods">
+          <div class="state-box">
+            <span class="state-period-title">ЗА ДЕНЬ</span>
+            <strong class="mono" id="state-day-avg">—</strong>
+            <div class="state-mini-bars" id="state-day-bars"></div>
+          </div>
+          <div class="state-box">
+            <span class="state-period-title">ЗА НЕДЕЛЮ</span>
+            <strong class="mono" id="state-week-avg">—</strong>
+            <div class="state-mini-bars" id="state-week-bars"></div>
+          </div>
+          <div class="state-box">
+            <span class="state-period-title">ЗА МЕСЯЦ</span>
+            <strong class="mono" id="state-month-avg">—</strong>
+            <div class="state-mini-bars" id="state-month-bars"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== НОВЫЙ МОДУЛЬ: ВЕЧЕРНИЙ ИТОГ ДНЯ (5 МИН) И ПЛАН НА ЗАВТРА С ПРЕДЛОЖЕНИЯМИ ===== -->
+    <section class="card evening-card" data-section="all evening today">
+      <div class="evening-header">
+        <div>
+          <span class="card-tag">ВЕЧЕРНИЙ РИТУАЛ // АНТИ-СТРЕСС ПЕРЕД СНОМ</span>
+          <h2>Вечерний итог дня (5 мин) и План на завтра</h2>
+          <p class="matrix-sub">Короткая запись того, что удалось сделать за день, и план на завтра разгружают мозг и снимают тревожность перед сном.</p>
+        </div>
+        <div class="evening-timer-bar">
+          <div class="custom-min-box" title="Задать своё время в минутах">
+            <input type="number" id="evening-custom-mins" min="1" max="180" value="5">
+            <span class="mono">мин</span>
+          </div>
+          <span class="mono evening-clock" id="evening-timer-display">05:00</span>
+          <button type="button" class="btn-ghost" id="evening-timer-btn">⏱ Старт</button>
+          <button type="button" class="btn-ghost" id="evening-timer-reset" title="Сбросить таймер">↺</button>
+          <button type="button" class="btn-primary" id="complete-evening-btn">✓ Зафиксировать итог (+15 XP)</button>
+        </div>
+      </div>
+
+      <div class="evening-grid">
+        <!-- Колонка 1: Что удалось сделать за день -->
+        <div class="evening-col">
+          <div class="col-head-row">
+            <span class="sys-label">1. ЧТО УДАЛОСЬ СДЕЛАТЬ ЗА СЕГОДНЯ</span>
+            <button type="button" class="mini-link-btn" id="autofill-wins-btn">⚡ Авто-итог из отмеченных</button>
+          </div>
+          <textarea id="evening-wins-input" rows="5" placeholder="Запиши 2–3 главные вещи, которые удалось сделать сегодня (даже небольшие шаги считаются)..."></textarea>
+
+          <label class="sys-label" for="evening-release-input" style="margin-top:8px;">ЧТО ВЫГРУЗИТЬ ИЗ ГОЛОВЫ ПЕРЕД СНОМ (ЧТОБЫ НЕ ТРЕВОЖИЛО)</label>
+          <input type="text" id="evening-release-input" class="dark-input" placeholder="Мысль или задача, которую откладываю до завтра и спокойно иду спать...">
+        </div>
+
+        <!-- Колонка 2: Складання плану на завтра -->
+        <div class="evening-col">
+          <div class="col-head-row">
+            <span class="sys-label">2. ПЛАН НА ЗАВТРА (ДО 3–5 ГЛАВНЫХ ЗАДАЧ)</span>
+            <span class="mono card-sub" id="tomorrow-plan-count">0 задач</span>
+          </div>
+
+          <form id="tomorrow-form" class="tomorrow-form">
+            <input type="text" id="tomorrow-input" class="dark-input" placeholder="Добавить задачу в план на завтра..." maxlength="70" required>
+            <button type="submit" class="btn-primary">+ В план</button>
+          </form>
+
+          <ul class="tomorrow-list" id="tomorrow-list"></ul>
+        </div>
+
+        <!-- Колонка 3: Умные предложения планов -->
+        <div class="evening-col">
+          <div class="col-head-row">
+            <span class="sys-label">3. ПРЕДЛОЖЕНИЯ ПЛАНОВ НА ЗАВТРА (В 1 КЛИК)</span>
+            <button type="button" class="mini-link-btn" id="refresh-suggestions-btn">↻ Обновить</button>
+          </div>
+          <p class="suggestion-hint">Нажми на любое предложение, чтобы сразу добавить его в свой план на завтра:</p>
+          <div class="suggestions-box" id="suggestions-box"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== БЛОК 2: ПУЛЬТ СЕГОДНЯШНЕГО ДНЯ + ФОКУС-ТАЙМЕР ===== -->
+    <section class="today-workspace" data-section="today">
+      <!-- Чек-лист на сегодня -->
+      <div class="card">
+        <div class="card-head">
+          <h2>Привычки на сегодня</h2>
+          <span class="mono card-sub" id="today-checklist-sub">БЫСТРАЯ ОТМЕТКА</span>
+        </div>
+        <ul class="today-habit-list" id="today-habit-list"></ul>
+      </div>
+
+      <!-- Быстрая оценка состояния на сегодня -->
+      <div class="card">
+        <div class="card-head">
+          <h2>Оценка состояния сегодня</h2>
+          <span class="mono card-sub">ШКАЛА 1–5</span>
+        </div>
+        <div class="quick-state-controls" id="quick-state-controls"></div>
+      </div>
+
+      <!-- Фокус-таймер (Pomodoro) -->
+      <div class="card timer-card">
+        <div class="card-head">
+          <h2>Фокус-таймер</h2>
+          <span class="mono card-sub">+25 XP ЗА СЕССИЮ</span>
+        </div>
+        <div class="timer-display mono" id="timer-display">25:00</div>
+        <div class="timer-modes">
+          <button class="btn-ghost active" data-mins="25">25 мин</button>
+          <button class="btn-ghost" data-mins="50">50 мин</button>
+          <button class="btn-ghost" data-mins="5">5 мин</button>
+          <div class="custom-min-box" title="Введи своё количество минут">
+            <input type="number" id="focus-custom-mins" min="1" max="240" value="25" placeholder="Мин">
+            <span class="mono">мин</span>
+          </div>
+        </div>
+        <div class="timer-actions">
+          <button class="btn-primary" id="timer-start">СТАРТ</button>
+          <button class="btn-ghost" id="timer-reset">СБРОС</button>
+        </div>
+        <p class="mono timer-stat">Завершено сессий: <b id="focus-sessions-count">0</b></p>
+      </div>
+    </section>
+
+    <!-- ===== БЛОК 3: ТРЕБУЮТ ВНИМАНИЯ + ТОП-5 ПРИВЫЧЕК + ГРАФИК СОСТОЯНИЯ ===== -->
+    <section class="insights-grid" data-section="all">
+      <!-- Требуют внимания -->
+      <div class="card">
+        <div class="card-head">
+          <h2>Требуют внимания</h2>
+          <span class="mono card-sub">ОТСТАЮЩИЕ ЗА МЕСЯЦ</span>
+        </div>
+        <ul class="rank-list warning-list" id="attention-list"></ul>
+      </div>
+
+      <!-- ТОП-5 привычек -->
+      <div class="card">
+        <div class="card-head">
+          <h2>ТОП-5 привычек</h2>
+          <span class="mono card-sub">ЛИДЕРЫ МЕСЯЦА</span>
+        </div>
+        <ol class="rank-list top-list" id="top-list"></ol>
+      </div>
+
+      <!-- График состояния за месяц (оси X / Y) -->
+      <div class="card">
+        <div class="card-head">
+          <h2>График состояния за месяц (X / Y)</h2>
+          <div class="chart-legend mono">
+            <span style="color:#06b6d4">● Настр.</span>
+            <span style="color:#10b981">● Энерг.</span>
+            <span style="color:#f59e0b">● Фокус</span>
+          </div>
+        </div>
+        <canvas id="state-chart"></canvas>
+      </div>
+    </section>
+
+    <!-- ===== БЛОК 4: ГЛАВНАЯ МАТРИЦА МЕСЯЦА (НЕДЕЛЯ 1..5) ===== -->
+    <section class="card matrix-card" data-section="all">
+      <div class="matrix-toolbar">
+        <div>
+          <h2>Матрица привычек и состояния за месяц</h2>
+          <p class="matrix-sub">Клик по галочке отмечает день, клик по «✎» редактирует привычку. Все расчёты обновляются автоматически.</p>
+        </div>
+        <form id="add-habit-form" class="add-habit-form">
+          <input type="text" id="habit-name-input" placeholder="Новая привычка (напр.: Код 60 мин)" maxlength="55" required>
+          <input type="number" id="habit-goal-input" placeholder="Цель/мес" min="1" max="31" title="Цель дней в месяц">
+          <button type="submit" class="btn-primary">+ Добавить привычку</button>
+        </form>
+      </div>
+
+      <div class="matrix-scroll" id="matrix-scroll">
+        <table class="matrix-table" id="matrix-table"></table>
+      </div>
+    </section>
+
+    <!-- ===== БЛОК 5: ДОСТИЖЕНИЯ ===== -->
+    <section class="card" data-section="all achievements">
+      <div class="card-head">
+        <h2>Сертификации и достижения</h2>
+        <span class="mono card-sub" id="ach-counter">0 / 8 ОТКРЫТО</span>
+      </div>
+      <div class="ach-grid" id="ach-grid"></div>
+    </section>
+
+  </div>
+
+  <!-- ===== МОДАЛЬНОЕ ОКНО: РЕДАКТИРОВАНИЕ ПРОФИЛЯ И НИКНЕЙМА ===== -->
+  <div class="modal-backdrop" id="profile-modal" hidden>
+    <div class="modal-box">
+      <div class="modal-head">
+        <h3>Настройки профиля оператора</h3>
+        <button class="modal-close" data-close="profile-modal">✕</button>
+      </div>
+      <form id="profile-form" class="modal-form">
+        <label class="field-label">НИКНЕЙМ / ПОЗЫВНОЙ
+          <input type="text" id="profile-name-input" maxlength="24" required placeholder="Введи свой ник">
+        </label>
+        <label class="field-label">СПЕЦИАЛИЗАЦИЯ / СТАТУС
+          <input type="text" id="profile-role-input" maxlength="36" placeholder="Напр.: Software Engineer">
+        </label>
+        <div class="field-label">ЭМБЛЕМА ПРОФИЛЯ
+          <div class="emblem-picker" id="emblem-picker"></div>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn-ghost" data-close="profile-modal">Отмена</button>
+          <button type="submit" class="btn-primary">Сохранить профиль</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===== МОДАЛЬНОЕ ОКНО: РЕДАКТИРОВАНИЕ ПРИВЫЧКИ ===== -->
+  <div class="modal-backdrop" id="habit-modal" hidden>
+    <div class="modal-box">
+      <div class="modal-head">
+        <h3>Редактировать привычку</h3>
+        <button class="modal-close" data-close="habit-modal">✕</button>
+      </div>
+      <form id="edit-habit-form" class="modal-form">
+        <input type="hidden" id="edit-habit-id">
+        <label class="field-label">НАЗВАНИЕ ПРИВЫЧКИ
+          <input type="text" id="edit-habit-name" maxlength="55" required>
+        </label>
+        <label class="field-label">ЦЕЛЬ ДНЕЙ В МЕСЯЦ (1–31)
+          <input type="number" id="edit-habit-goal" min="1" max="31" required>
+        </label>
+        <div class="modal-actions">
+          <button type="button" class="btn-danger" id="delete-habit-modal-btn">Удалить</button>
+          <button type="button" class="btn-ghost" data-close="habit-modal">Отмена</button>
+          <button type="submit" class="btn-primary">Сохранить</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===== МОДАЛЬНОЕ ОКНО: ЭКСПОРТ / ИМПОРТ ДАННЫХ ===== -->
+  <div class="modal-backdrop" id="backup-modal" hidden>
+    <div class="modal-box">
+      <div class="modal-head">
+        <h3>Резервная копия данных (JSON)</h3>
+        <button class="modal-close" data-close="backup-modal">✕</button>
+      </div>
+      <div class="modal-form">
+        <p class="matrix-sub">Скопируй этот JSON-код для сохранения или вставь ранее сохранённый код и нажми «Импортировать».</p>
+        <textarea id="backup-textarea" class="mono" rows="6"></textarea>
+        <div class="modal-actions">
+          <button type="button" class="btn-ghost" id="download-json-btn">Скачать .json</button>
+          <button type="button" class="btn-primary" id="import-json-btn">Импортировать</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Контейнер всплывающих уведомлений -->
+  <div class="toasts" id="toasts"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
